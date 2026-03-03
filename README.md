@@ -18,7 +18,7 @@ Welcome! In this 3-hour hands-on workshop you will build an AI agent from scratc
 
 **What is an Agent?**
 
-An [agent](https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf) is an LLM in a loop with the ability to invoke tools (Python functions — which in turn can invoke APIs) and use the output of these tools in the next loop iteration.
+An [agent](https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf) is an LLM with the ability to invoke tools (Python functions — which in turn can invoke APIs) and use the output of these tools to generate better, more informed answers.
 
 ## How the Workshop Works
 
@@ -88,7 +88,7 @@ git checkout -b my-work origin/solution/milestone-3
 
 ### 1. Fork and clone the repository
 
-Go to https://github.com/ml6team/AISO-workshop and click **Fork** (top right) to create
+Go to <https://github.com/ml6team/AISO-workshop> and click **Fork** (top right) to create
 your own copy. This keeps your work private and separate from other participants.
 
 ```bash
@@ -142,7 +142,7 @@ uv sync
 uv run adk web
 ```
 
-Open [http://127.0.0.1:8000](http://127.0.0.1:8000) in your browser. You should see the ADK chat interface. Send a test message to confirm everything works.
+Open [http://127.0.0.1:8000](http://127.0.0.1:8000) in your browser. You should see the ADK chat interface. In the top-left dropdown, select **my_agent** as the app, then send a test message to confirm everything works.
 
 **Setup complete!** You are ready to start building.
 
@@ -196,7 +196,8 @@ Some benchmark questions involve arithmetic. LLMs are notoriously unreliable at 
 3. The function's **docstring is critical** — the agent reads it to decide *when* and *how* to call the tool. Write it clearly, including argument descriptions.
 4. Export your function from `my_agent/tools/__init__.py`.
 5. Import it and add it to the `tools` list in `my_agent/agent.py`.
-6. Test it in the UI: ask your agent "What is 1457 * 38?" and check if it calls your calculator tool.
+6. Update the `instruction` in `agent.py` to tell the agent *when* to use the calculator (e.g. "Use the calculator tool for all arithmetic."). A good docstring helps, but an explicit instruction is more reliable.
+7. Test it in the UI: ask your agent "What is 1457 * 38?" and check if it calls your calculator tool.
 
 ### Run the benchmark
 
@@ -225,7 +226,8 @@ Look at the benchmark questions — some reference PDF attachments (e.g., a libr
 4. Think about what your function should return. Raw text? A summary? How will the agent use it?
 5. Remember: the **docstring** tells the agent when to use the tool. Make it clear that this tool is for PDF files.
 6. Register the tool in `agent.py` just like you did with the calculator.
-7. Test with a question that uses a PDF attachment:
+7. Update the `instruction` to tell the agent when to reach for this tool (e.g. "When a question references a PDF file, use the PDF reader tool with the file path provided.").
+8. Test with a question that uses a PDF attachment:
 
    ```bash
    uv run python evaluate.py --question 7
@@ -252,10 +254,13 @@ Several benchmark questions require real web lookups (e.g., historical facts, mo
    - Google Custom Search API
    - SerpAPI / Tavily
    - Or use Gemini's built-in grounding with Google Search ([ADK docs on built-in tools](https://google.github.io/adk-docs/tools/built-in-tools/))
+
+   > **Note:** ADK's built-in `google_search` tool prevents the agent from using any other custom tools on the same agent. If you need web search *and* your calculator/PDF tools, use the `ddgs` approach instead.
+
 2. Your search tool should return a list of results with titles, URLs, and snippets.
 3. Consider creating a second tool (`fetch_webpage.py`) that takes a URL and returns the page text. The agent can then search first, then read a specific result for details.
 4. Think about what to return -- the agent needs enough context to answer the question, but not so much that it gets overwhelmed. Consider truncating long pages.
-5. Register both tools in `agent.py` and update the instruction to explain when to use each.
+5. Register both tools in `agent.py` and update the `instruction` to explain when to use each — e.g. "Use web_search to find relevant URLs, then fetch_webpage to read the content of a specific page."
 6. Test with a question that requires web knowledge:
 
    ```bash
@@ -274,10 +279,13 @@ uv run python evaluate.py
 
 You've built a solid agent with tools for math, PDFs, and web search. Now it's time to get creative and see how far you can take it.
 
+**Strategy:** Start by pushing for **100% accuracy** — check which questions your agent still gets wrong and target those first. Once you're satisfied with accuracy, look at response times and try to make your agent faster.
+
 ### Ideas to explore
 
 - **Multi-agent architectures** — Use `sub_agents` in ADK to create specialized agents (e.g., a "researcher" and a "calculator") orchestrated by a coordinator. Check the [ADK docs on multi-agent systems](https://google.github.io/adk-docs/).
 - **Image understanding** — Can you build a tool that reads and interprets images? Think about supporting multiple formats and extracting targeted information rather than generic descriptions.
+- **Chess engine** — For the chess question, consider building a tool that calls a chess engine programmatically. You could install Stockfish via `uv add python-stockfish` and wrap it in a function that finds the best move for a given board position for example.
 - **Better prompting** — Revisit your agent's `instruction`. Add reasoning strategies, output formatting rules, or few-shot examples.
 - **Smarter tool design** — Can your tools return structured data? Can you combine tools in clever ways?
 - **Try a more powerful model** — Switch to `gemini-2.5-flash` or `gemini-2.5-pro` and see if accuracy improves.
@@ -309,7 +317,7 @@ How high can you get?
 ### Project Structure
 
 ```
-AISO-agents-workshop/
+AISO-workshop/
 ├── my_agent/              # YOUR WORKSPACE
 │   ├── agent.py           # Define your agent here
 │   ├── tools/             # Add custom tools here
@@ -329,6 +337,7 @@ AISO-agents-workshop/
 
 - **Test interactively** — Use `uv run adk web` to chat with your agent and see tool calls in real time.
 - **Test specific questions** — Use `uv run python evaluate.py --question <index>` to debug individual failures.
+- **Test tools in isolation** — Before registering a new tool with your agent, call it directly in a Python script (`uv run python -c "from my_agent.tools.calculator import calculator; print(calculator('add', 2, 3))"`) to verify it returns what you expect.
 - **Read the docs** — The [ADK documentation](https://google.github.io/adk-docs/) covers everything from tool creation to multi-agent setups.
 - **Check the examples** — Browse the [ADK samples repository](https://github.com/google/adk-samples) for working examples.
 - **Iterate fast** — Change something, test it, see what happens. Repeat.
