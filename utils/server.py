@@ -30,7 +30,8 @@ class ADKAgentRunner:
         self.base_url = base_url
         self.agent_name = agent_name
         self.user_id = (
-            user_id  # User ID for sessions (use same as web UI to see eval chats there)
+            # User ID for sessions (use same as web UI to see eval chats there)
+            user_id
         )
         self.server_process = None
         self._we_started_server = False  # Track if we started the server
@@ -72,9 +73,11 @@ class ADKAgentRunner:
         max_retries = 30
         for _ in range(max_retries):
             try:
-                response = requests.get(f"{self.base_url}/list-apps", timeout=1)
+                response = requests.get(
+                    f"{self.base_url}/list-apps", timeout=1)
                 if response.status_code == 200:
-                    print(f"✓ ADK API server started successfully on {self.base_url}")
+                    print(
+                        f"✓ ADK API server started successfully on {self.base_url}")
                     return
             except requests.exceptions.RequestException:
                 time.sleep(1)
