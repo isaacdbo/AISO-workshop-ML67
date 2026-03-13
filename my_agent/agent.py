@@ -1,4 +1,5 @@
 import google.adk.agents as llm_agent
+from google.genai import types
 from .tools import calculator, read_pdf
 
 INSTRUCTION = """\
@@ -30,7 +31,7 @@ multiplication, division, exponents, and modulo. Never compute math in your head
 - The tool returns page-labelled text. Reference specific pages when relevant.
 - If the text is long, focus on the parts relevant to the question — do not dump \
 the entire content back to the user.
- 
+
 ## Tool Use (General)
 - When you have tools available, prefer using them over relying on memory \
 for anything that requires current data, calculations, or external lookups.
@@ -49,4 +50,7 @@ root_agent = llm_agent.Agent(
     instruction=INSTRUCTION,
     tools=[calculator, read_pdf],
     sub_agents=[],
+    generate_content_config=types.GenerateContentConfig(
+        temperature=0.2,
+    )
 )
