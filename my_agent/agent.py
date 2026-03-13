@@ -1,6 +1,4 @@
 import google.adk.agents as llm_agent
-from google.genai.types import GenerateContentConfig
-
 from .tools import calculator
 from .agents import document_agent, research_agent
 
@@ -13,7 +11,8 @@ right specialist agent. You almost never answer directly.
 ### 1. Question contains an ACTUAL FILE PATH
 → Delegate to **document_agent**.
 A file path looks like: "/path/to/file.pdf", "benchmark/attachments/9.pdf", \
-"./data/report.pdf", or any string with directories and a file extension.
+"benchmark/attachments/16.png", "./data/image.jpg", or any string with \
+directories and a file extension (.pdf, .png, .jpg, .jpeg, .csv, .xlsx, etc).
 ONLY route here when you see a real file system path in the question.
 
 ### 2. ALL other questions — including questions about documents by NAME
@@ -28,7 +27,7 @@ movies, science, math word problems, statistics, trivia.
 Even if you think you know the answer, delegate — your memory may be wrong.
 
 ## KEY DISTINCTION
-- File PATH present (e.g. "/tmp/9.pdf") → document_agent
+- File PATH present (e.g. "/tmp/9.pdf", "attachments/16.png") → document_agent
 - Document NAMED but no path (e.g. "the 2023 IPCC report") → research_agent
 - When unsure whether something is a path → research_agent
 
@@ -50,7 +49,4 @@ root_agent = llm_agent.Agent(
     instruction=INSTRUCTION,
     tools=[calculator],
     sub_agents=[document_agent, research_agent],
-    generate_content_config=GenerateContentConfig(
-        temperature=0.2,
-    )
 )
