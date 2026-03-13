@@ -9,6 +9,8 @@ import subprocess
 import time
 import uuid
 from typing import Any
+import base64
+import mimetypes
 
 import requests
 
@@ -157,10 +159,21 @@ class ADKAgentRunner:
 
         message_parts = [{"text": question}]
         if file_paths:
-            file_info = (
-                f"\n\nNote: The following files are relevant: {', '.join(file_paths)}"
-            )
-            message_parts[0]["text"] += file_info
+            for file_path in file_paths:
+                mime_type, _ = mimetypes.guess_type(file_path)
+                # Handle images inline
+                if mime_type and mime_type.startswith("image/"):
+                    with open(file_path, "rb") as f:
+                        image_data = base64.b64encode(f.read()).decode("utf-8")
+                    message_parts.append({
+                        "inline_data": {
+                            "mime_type": mime_type,
+                            "data": image_data
+                        }
+                    })
+                else:
+                    # For non-images (e.g. PDFs), keep passing as file path text
+                    message_parts[0]["text"] += f"\n\nFile path: {file_path}"
 
         # Send message using /run endpoint
         try:
